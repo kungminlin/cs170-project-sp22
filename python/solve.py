@@ -20,6 +20,18 @@ def solve_naive(instance: Instance) -> Solution:
         towers=instance.cities,
     )
 
+def solve_greedy(instance: Instance) -> Solution:
+    m = instance.grid_side_length
+    n = instance.grid_side_length
+    N = Instance.N(instance)
+    M = 0
+    cities = instance.cities
+    towers = []
+
+    while(cities):
+        cities_to_remove = []
+        for i in range(m):
+            for j in range(n):
 
 SOLVERS: Dict[str, Callable[[Instance], Solution]] = {
     "naive": solve_naive
