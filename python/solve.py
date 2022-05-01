@@ -6,6 +6,7 @@ For usage, run `python3 solve.py --help`.
 """
 
 import argparse
+import math
 from pathlib import Path
 from typing import Callable, Dict
 
@@ -32,7 +33,21 @@ def solve_greedy(instance: Instance) -> Solution:
         cities_to_remove = []
         for i in range(m):
             for j in range(n):
-
+                potential_cities = []
+                for city in cities:
+                    dist = math.dist(city, [i,j])
+                    if dist < instance.coverage_radius:
+                        potential_cities.append(city)
+                if len(potential_cities) > len(cities_to_remove):
+                    cities_to_remove = potential_cities
+                    towers.append([i,j])
+        for city in cities_to_remove:
+            cities.remove(city)
+    
+    return Solution(
+        M = len(towers),
+        towers = towers,
+    )
 SOLVERS: Dict[str, Callable[[Instance], Solution]] = {
     "naive": solve_naive
 }
