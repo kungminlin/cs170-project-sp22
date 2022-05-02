@@ -43,14 +43,12 @@ def penalty_not_sol(instance, towers, new_tower):
             overlap += 1
     return overlap
 
-
 def solve_greedy(instance: Instance) -> Solution:
     m = instance.grid_side_length
     n = instance.grid_side_length
     cities = instance.cities
-    cities_len = len(instance.cities)
     towers = []
-    print(len(cities))
+    #print(len(cities))
     while(cities):
         cities_to_remove = []
         tower_to_add = Point(x=0,y=0)
@@ -84,9 +82,9 @@ def solve_greedy(instance: Instance) -> Solution:
         for city in cities_to_remove:
             cities.remove(city)
         towers.append(tower_to_add)
-    print("\n")
-    print(len(towers))
-    print(penalty(instance, towers))
+    #print("\n")
+    #print(len(towers))
+    #print(penalty(instance, towers))
     return Solution(
         instance= instance,
         towers = towers,
