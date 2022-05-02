@@ -24,6 +24,28 @@ def solve_naive(instance: Instance) -> Solution:
         towers=instance.cities,
     )
 
+def solve_greedy(instance: Instance) -> Solution:
+    m = instance.grid_side_length
+    n = instance.grid_side_length
+
+    return Solution(
+        instance=instance,
+        towers=instance.cities
+    )
+
+def solve_propose(instance: Instance) -> Solution:
+
+    def decision(towers: Point[]):
+        for city in instance.cities:
+            city_is_covered = False
+            for tower in towers:
+                if city.distance_sq(tower) <= instance.coverage_radius**2:
+                    city_is_covered = True
+            if not city_is_covered:
+                return False
+        return True
+    
+    
 def solve_lp(instance: Instance) -> Solution:
     m = instance.grid_side_length
     n = instance.grid_side_length
@@ -120,6 +142,19 @@ def solve_lp(instance: Instance) -> Solution:
         instance=instance,
         towers=towers
     )
+
+def flatten(*args):
+    return np.hstack([x.flatten() for x in args])
+
+def setup_constraints(m, n, N):
+    T = np.zeros((m, n))
+    P = np.ones((m, n, m, n))
+    C = np.zeros((m, n, N))
+    def refresh_row():
+        T.fill(0)
+        P.fill(0)
+        C.fill(0)
+    return (T, P, C, refresh_row)
 
 def flatten(*args):
     return np.hstack([x.flatten() for x in args])
