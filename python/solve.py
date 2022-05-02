@@ -51,7 +51,7 @@ def solve_greedy(instance: Instance) -> Solution:
                 coord = Point(x = i, y=j)
                 for city in cities:
                     dist = city.distance_obj(coord)
-                    if dist < instance.coverage_radius:
+                    if dist <= instance.coverage_radius:
                         potential_cities.append(city)
                 towers_with_coord = towers + [coord]
                 potential_tower = towers + [tower_to_add]
