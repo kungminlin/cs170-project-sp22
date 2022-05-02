@@ -159,8 +159,7 @@ def solve_greedy_2(instance: Instance) -> Solution:
 
 SOLVERS: Dict[str, Callable[[Instance], Solution]] = {
     "naive": solve_naive,
-    "greedy": solve_greedy,
-    "greedy2": solve_greedy_2
+    "greedy": solve_greedy
 }
 
 
