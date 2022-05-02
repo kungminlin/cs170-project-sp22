@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Callable, Dict
 
 from instance import Instance
+from point import Point
 from solution import Solution
 from file_wrappers import StdinFileWrapper, StdoutFileWrapper
 
@@ -24,32 +25,32 @@ def solve_naive(instance: Instance) -> Solution:
 def solve_greedy(instance: Instance) -> Solution:
     m = instance.grid_side_length
     n = instance.grid_side_length
-    N = Instance.N(instance)
-    M = 0
     cities = instance.cities
     towers = []
-
     while(cities):
         cities_to_remove = []
+        tower_to_add = Point(x=0,y=0)
         for i in range(m):
             for j in range(n):
                 potential_cities = []
+                coord = Point(x = i, y=j)
                 for city in cities:
-                    dist = math.dist(city, [i,j])
+                    dist = city.distance_obj(coord)
                     if dist < instance.coverage_radius:
                         potential_cities.append(city)
                 if len(potential_cities) > len(cities_to_remove):
                     cities_to_remove = potential_cities
-                    towers.append([i,j])
+                    tower_to_add = coord
         for city in cities_to_remove:
             cities.remove(city)
-    
+        towers.append(tower_to_add)
     return Solution(
-        M = len(towers),
+        instance= instance,
         towers = towers,
     )
 SOLVERS: Dict[str, Callable[[Instance], Solution]] = {
-    "naive": solve_naive
+    "naive": solve_naive,
+    "greedy": solve_greedy,
 }
 
 
