@@ -25,7 +25,6 @@ def solve_naive(instance: Instance) -> Solution:
 def penalty(instance, towers):
     """Computes the penalty for this solution."""
     penalty = 0
-    print(towers)
     for fidx, first in enumerate(towers):
         num_overlaps = 0
         for sidx, second in enumerate(towers):
@@ -40,6 +39,7 @@ def solve_greedy(instance: Instance) -> Solution:
     n = instance.grid_side_length
     cities = instance.cities
     towers = []
+    print(len(cities))
     while(cities):
         cities_to_remove = []
         tower_to_add = Point(x=0,y=0)
@@ -51,14 +51,17 @@ def solve_greedy(instance: Instance) -> Solution:
                     dist = city.distance_obj(coord)
                     if dist < instance.coverage_radius:
                         potential_cities.append(city)
-                towers_with_coord = towers.append(coord)
-                potential_tower = towers.append(tower_to_add)
+                towers_with_coord = towers + [coord]
+                potential_tower = towers + [tower_to_add]
                 if (len(potential_cities) > len(cities_to_remove) and penalty(instance, towers_with_coord) < penalty(instance, potential_tower)) or len(cities_to_remove) == 0:
                     cities_to_remove = potential_cities
                     tower_to_add = coord
         for city in cities_to_remove:
             cities.remove(city)
         towers.append(tower_to_add)
+    print("\n")
+    print(len(towers))
+    print(penalty(instance, towers))
     return Solution(
         instance= instance,
         towers = towers,
