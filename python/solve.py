@@ -6,10 +6,14 @@ For usage, run `python3 solve.py --help`.
 """
 
 import argparse
+import math
 from pathlib import Path
 from typing import Callable, Dict
+import numpy as np
+import scipy
 
 from instance import Instance
+from point import Point
 from solution import Solution
 from file_wrappers import StdinFileWrapper, StdoutFileWrapper
 
@@ -41,8 +45,7 @@ def solve_propose(instance: Instance) -> Solution:
                 return False
         return True
     
-
-
+    
 def solve_lp(instance: Instance) -> Solution:
     m = instance.grid_side_length
     n = instance.grid_side_length
@@ -153,9 +156,67 @@ def setup_constraints(m, n, N):
         C.fill(0)
     return (T, P, C, refresh_row)
 
+def flatten(*args):
+    return np.hstack([x.flatten() for x in args])
+
+def setup_constraints(m, n, N):
+    T = np.zeros((m, n))
+    P = np.ones((m, n, m, n))
+    C = np.zeros((m, n, N))
+    def refresh_row():
+        T.fill(0)
+        P.fill(0)
+        C.fill(0)
+    return (T, P, C, refresh_row)
+
+def penalty(instance, towers):
+    """Computes the penalty for this solution."""
+    penalty = 0
+    for fidx, first in enumerate(towers):
+        num_overlaps = 0
+        for sidx, second in enumerate(towers):
+            if fidx == sidx:
+                continue
+            if Point.distance_obj(first, second) <= instance.penalty_radius:
+                num_overlaps += 1
+        penalty += 170 * math.exp(0.17 * num_overlaps)
+    return penalty
+def solve_greedy(instance: Instance) -> Solution:
+    m = instance.grid_side_length
+    n = instance.grid_side_length
+    cities = instance.cities
+    towers = []
+    print(len(cities))
+    while(cities):
+        cities_to_remove = []
+        tower_to_add = Point(x=0,y=0)
+        for i in range(m):
+            for j in range(n):
+                potential_cities = []
+                coord = Point(x = i, y=j)
+                for city in cities:
+                    dist = city.distance_obj(coord)
+                    if dist < instance.coverage_radius:
+                        potential_cities.append(city)
+                towers_with_coord = towers + [coord]
+                potential_tower = towers + [tower_to_add]
+                if (len(potential_cities) > len(cities_to_remove) and penalty(instance, towers_with_coord) < penalty(instance, potential_tower)) or len(cities_to_remove) == 0:
+                    cities_to_remove = potential_cities
+                    tower_to_add = coord
+        for city in cities_to_remove:
+            cities.remove(city)
+        towers.append(tower_to_add)
+    print("\n")
+    print(len(towers))
+    print(penalty(instance, towers))
+    return Solution(
+        instance= instance,
+        towers = towers,
+    )
 SOLVERS: Dict[str, Callable[[Instance], Solution]] = {
     "naive": solve_naive,
-    "LP": solve_lp
+    "greedy": solve_greedy,
+    "lp": solve_lp,
 }
 
 
