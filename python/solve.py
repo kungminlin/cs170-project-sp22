@@ -10,7 +10,7 @@ import math
 from pathlib import Path
 from typing import Callable, Dict
 import numpy as np
-import scipy
+from scipy import optimize
 
 from instance import Instance
 from point import Point
@@ -24,6 +24,64 @@ def solve_naive(instance: Instance) -> Solution:
         towers=instance.cities,
     )
 
+def solve_lp_2(instance: Instance) -> Solution:
+    D = instance.grid_side_length
+    N = len(instance.cities)
+    potential_locations = [[] for city in instance.cities]
+
+    for i in range(D):
+        for j in range(D):
+            location = Point(x=i, y=j)
+            for k in range(N):
+                city = instance.cities[k]
+                if city.distance_obj(location) <= instance.coverage_radius:
+                    potential_locations[k].append(location)
+                    break
+
+    flattened_locations = [tower for city in potential_locations for tower in city]
+    n = len(flattened_locations)
+
+    penalty_values = np.zeros(n)
+    for i in range(n):
+        towerA = flattened_locations[i]
+        for j in range(n):
+            towerB = flattened_locations[j]
+            if i != j and towerA.distance_obj(towerB) <= instance.penalty_radius:
+                penalty_values[i] += 1
+
+    penalty_values = 170 * np.exp(0.17 * penalty_values)
+
+    X = np.zeros(n)
+    c = np.hstack([X, penalty_values])
+
+    A = np.zeros((N+n,2*n))
+    b = np.zeros(N+n)
+
+    index = 0
+    for k in range(N):
+        city_k_locations = potential_locations[k]
+        A[k,index:(index + len(city_k_locations))] = -1
+        b[k] = -1
+        index += len(city_k_locations)
+
+    for i in range(n):
+        A[N+i,i] = 1
+        A[N+i,n+i] = -1
+        b[N+i] = 0
+
+    result = optimize.linprog(c, A_ub=A, b_ub=b, bounds=(0, None), method="simplex")
+
+    towers = []
+    for i in range(n):
+        if np.round(result.x[i]) >= 1:
+            towers.append(flattened_locations[i])
+
+    return Solution(
+        instance=instance,
+        towers=towers
+    )
+
+
 def solve_lp(instance: Instance) -> Solution:
     m = instance.grid_side_length
     n = instance.grid_side_length
@@ -35,8 +93,6 @@ def solve_lp(instance: Instance) -> Solution:
     P_c = np.ones((m, n, m, n))
     C_c = np.zeros((m, n, N))
     c = flatten(T_c, P_c, C_c)
-
-    print("Set Objective")
 
     # Constraints
     A = []
@@ -50,9 +106,6 @@ def solve_lp(instance: Instance) -> Solution:
             C[i,j,:] = 1
             A.append(flatten(T, P, C))
             b.append(0)
-
-    print("Added City Coverage Constraints #1")
-    print("Total Constraints:", len(A))
 
     M = np.sqrt(m**2 + n**2)
     for k in range(N):
@@ -69,17 +122,11 @@ def solve_lp(instance: Instance) -> Solution:
                 A.append(flatten(T, P, C))
                 b.append(M - (dist - instance.coverage_radius))
 
-    print("Added City Coverage Constraints #2")
-    print("Total Constraints:", len(A))
-
     for k in range(N):
         refresh_row()
         C[:,:,k] = -1
         A = np.vstack([A, flatten(T, P, C)])
         b.append(-1)
-
-    print("Added City Coverage Constraints #3")
-    print("Total Constraints:", len(A))
 
     # Penalty Constraint
     for i in range(m):
@@ -98,15 +145,10 @@ def solve_lp(instance: Instance) -> Solution:
                     A.append(flatten(T, P, C))
                     b.append(dist - instance.penalty_radius)
 
-    print("Added Penalty Constraints")
-    print("Total Constraints:", len(A))
-
     A = np.array(A)
     b = np.array(b)
 
     x = scipy.optimize.linprog(c, A_ub=A, b_ub=b, bounds=(0, None))
-
-    print("Finished Running LP")
 
     x = np.reshape(x, (m, n))
 
@@ -182,6 +224,7 @@ SOLVERS: Dict[str, Callable[[Instance], Solution]] = {
     "naive": solve_naive,
     "greedy": solve_greedy,
     "lp": solve_lp,
+    "lp2": solve_lp_2
 }
 
 
