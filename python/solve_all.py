@@ -21,6 +21,7 @@ from solution import Solution
 # YOUR CODE HERE
 from solve import solve_naive
 from solve import solve_greedy
+from solve import solve_greedy_2
 
 
 class Size(enum.Enum):
@@ -33,11 +34,11 @@ def solver(size: Size, instance: Instance) -> Solution:
     # Modify this function to use your imported solvers.
     # YOUR CODE HERE
     if size == Size.SMALL:
-        return solve_greedy(instance)
+        return solve_greedy_2(instance)
     elif size == Size.MEDIUM:
-        return solve_greedy(instance)
+        return solve_greedy_2(instance)
     elif size == Size.LARGE:
-        return solve_greedy(instance)
+        return solve_greedy_2(instance)
 
 
 # You shouldn't need to modify anything below this line.
