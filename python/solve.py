@@ -36,10 +36,19 @@ def penalty(instance, towers):
         penalty += 170 * math.exp(0.17 * num_overlaps)
     return penalty
 
+def penalty_not_sol(instance, towers, new_tower):
+    overlap = 0
+    for tower in towers:
+        if Point.distance_obj(tower, new_tower) <= instance.penalty_radius:
+            overlap += 1
+    return overlap
+
+
 def solve_greedy(instance: Instance) -> Solution:
     m = instance.grid_side_length
     n = instance.grid_side_length
     cities = instance.cities
+    cities_len = len(instance.cities)
     towers = []
     print(len(cities))
     while(cities):
@@ -48,19 +57,30 @@ def solve_greedy(instance: Instance) -> Solution:
         for i in range(m):
             for j in range(n):
                 potential_cities = []
-                coord = Point(x = i, y=j)
+                coord = Point(x = i, y = j)
                 for city in cities:
                     dist = city.distance_obj(coord)
                     if dist <= instance.coverage_radius:
                         potential_cities.append(city)
-                towers_with_coord = towers + [coord]
-                potential_tower = towers + [tower_to_add]
+                #towers_with_coord = towers + [coord]
+                #potential_tower = towers + [tower_to_add]
                 if len(potential_cities) > len(cities_to_remove):
                     cities_to_remove = potential_cities
                     tower_to_add = coord
-                elif len(potential_cities) >= len(cities_to_remove) and penalty(instance, towers_with_coord) < penalty(instance, potential_tower):
-                    cities_to_remove = potential_cities
-                    tower_to_add = coord
+                #if len(cities) <= cities_len*3/5:
+                #    if len(potential_cities) >= len(cities_to_remove) and penalty_not_sol(instance, towers, coord) < penalty_not_sol(instance, towers, tower_to_add):
+                #        cities_to_remove = potential_cities
+                #        tower_to_add = coord
+                elif len(potential_cities) >= len(cities_to_remove): 
+                    potential_penalty = penalty_not_sol(instance, towers, coord)
+                    curr_penalty = penalty_not_sol(instance, towers, tower_to_add)
+                    if potential_penalty < curr_penalty:
+                        cities_to_remove = potential_cities
+                        tower_to_add = coord
+                    elif (potential_penalty == curr_penalty) and (coord.x == 0 or coord.y == 0 or coord.x == n-1 or coord.y == n-1 or coord.x == 1 or coord.y == 1 or coord.x == n-2 or coord.y == n-2):
+                        cities_to_remove = potential_cities
+                        tower_to_add = coord
+
         for city in cities_to_remove:
             cities.remove(city)
         towers.append(tower_to_add)
