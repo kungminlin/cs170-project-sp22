@@ -98,26 +98,29 @@ def solve_greedy_2(instance: Instance) -> Solution:
                     dist = city.distance_obj(coord) # dist(city, tower)
                     if dist < instance.coverage_radius:
                         covered_cities.append(city)
-                covered_cities_matrix[i][j] = covered_cities
 
+                covered_cities_matrix[i, j] = covered_cities
                 # keep track of penalty 
                 towers_with_coord = towers + [coord]
-                penalty_matrix[i][j] = penalty(instance, towers_with_coord)
+                penalty_matrix[i, j] = penalty(instance, towers_with_coord)
 
         # look at cities only with min penalty
-        max_penalty = np.argmin(penalty_matrix) # update max_penalty if needed
-        towers_min_penalty = np.transpose(np.where(penalty_matrix <= max_penalty))
+        max_penalty = np.min(penalty_matrix) # update max_penalty if needed
+        print(np.min(penalty_matrix))
+        towers_min_penalty = np.transpose(np.where(penalty_matrix <= max_penalty)) # returns all indices where penalty_matrix <= max_penalty
+        print(towers_min_penalty)
         # find tower with max city coverage (given min penalty)
         for i in towers_min_penalty: # i is coords of towers with min penalty
             x = i[0]
             y = i[1]
-            if (len(covered_cities_matrix[x][y]) >= len(cities_to_remove)):
-                if (len(covered_cities_matrix[x][y]) == len(cities_to_remove)): # for some randomization so we don't always pick the first or last location with max city coverage
+            if (len(covered_cities_matrix[x , y]) >= len(cities_to_remove)):
+                if (len(covered_cities_matrix[x, y]) == len(cities_to_remove)): # for some randomization so we don't always pick the first or last location with max city coverage
                     if np.random.random() > 0.5:
-                        cities_to_remove = covered_cities_matrix[x][y]
+                        cities_to_remove = covered_cities_matrix[x, y]
+                        tower_to_add = Point(x=x, y=y)
                 else:
-                    cities_to_remove = covered_cities_matrix[x][y]
-            tower_to_add = Point(x=x, y=y)
+                    cities_to_remove = covered_cities_matrix[x, y]
+                    tower_to_add = Point(x=x, y=y)
 
         towers.append(tower_to_add)
         for city in cities_to_remove:
