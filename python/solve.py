@@ -15,7 +15,7 @@ from point import Point
 from solution import Solution
 from file_wrappers import StdinFileWrapper, StdoutFileWrapper
 
-#import numpy as np
+import numpy as np
 
 def solve_naive(instance: Instance) -> Solution:
     return Solution(
