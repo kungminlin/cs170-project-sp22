@@ -1,3 +1,7 @@
+## How to Run
+python3 python/solve_all.py inputs outputs
+
+
 # Spring 2022 CS170 Project Skeleton
 
 ## Requirements

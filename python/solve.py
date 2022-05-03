@@ -75,7 +75,7 @@ def solve_greedy(instance: Instance) -> Solution:
                     if potential_penalty < curr_penalty:
                         cities_to_remove = potential_cities
                         tower_to_add = coord
-                    elif (potential_penalty == curr_penalty) and (coord.x == 0 or coord.y == 0 or coord.x == n-1 or coord.y == n-1 or coord.x == 1 or coord.y == 1 or coord.x == n-2 or coord.y == n-2):
+                    elif (potential_penalty == curr_penalty) and (coord.x == 0 or coord.y == 0 or coord.x == n-1 or coord.y == n-1):
                         cities_to_remove = potential_cities
                         tower_to_add = coord
 
